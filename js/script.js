@@ -375,6 +375,15 @@ const UI = {
 
         cartSidebar.classList.toggle("translate-x-full");
         overlay.classList.toggle("hidden");
+        if (isOpen) {
+            cartSidebar.classList.add("translate-x-full");
+            overlay.classList.add("hidden");
+
+        } else {
+            cartSidebar.classList.remove("translate-x-full");
+            overlay.classList.remove("hidden");
+            
+        }
 
     },
 
