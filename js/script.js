@@ -157,8 +157,9 @@ const cart = {
 
 
     remove (productId) {
-        this.items = this.items.filter(item => item.product.id !== productId);
+        this.items = this.items.filter(item => item.id !== productId);
         this.save();
+        
 
     },
 
@@ -344,7 +345,7 @@ const UI = {
 
 
     incrementQuantity (productId){
-        const item = cart.items.find(item => item.product.id === productId);
+        const item = cart.items.find(item => item.id === productId);
         if (item) {
             cart.updateQuantity(productId, item.quantity + 1);
 
@@ -354,7 +355,7 @@ const UI = {
 
 
     decrementQuantity (productId){
-        const item = cart.items.find(item => item.product.id === productId);
+        const item = cart.items.find(item => item.id === productId);
         if (item) {
             cart.updateQuantity(productId, item.quantity - 1);
 
@@ -382,7 +383,7 @@ const UI = {
         } else {
             cartSidebar.classList.remove("translate-x-full");
             overlay.classList.remove("hidden");
-            
+
         }
 
     },
