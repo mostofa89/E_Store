@@ -289,12 +289,12 @@ const UI = {
             cartItems.innerHTML = `
                 <div class="text-center py-12">
                     <div class="mb-4">
-                        <svg class="w-24 h-24 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-24 text-white h-24 mx-auto text-White" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
                         </svg>
                     </div>
-                    <p class="text-gray-500 text-lg">Your cart is empty</p>
-                    <p class="text-gray-400 text-sm mt-2">Add some items to get started!</p>
+                    <p class="text-white text-lg">Your cart is empty</p>
+                    <p class="text-white text-sm mt-2">Add some items to get started!</p>
                 </div>
             `;
         } else {
@@ -303,7 +303,7 @@ const UI = {
                     <div class="flex gap-4">
                         <div class="relative group">
                             <img src="${item.image}" alt="${item.name}" class="w-24 h-24 object-cover rounded-xl shadow-md group-hover:scale-105 transition-transform">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         </div>
                         <div class="flex-1">
                             <h4 class="font-bold text-gray-800 text-lg mb-1">${item.name}</h4>
