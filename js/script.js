@@ -114,6 +114,8 @@ const products = [
 // Cart Object - Handles all cart operations
 const cart = {
     items: [],
+    discount: 0,
+    appliedPromo: null,
 
     // Add product to cart
     add(product) {
@@ -175,6 +177,53 @@ const cart = {
         this.save();
 
     },
+    
+
+    // Apply promo code
+    applyPromoCode(code) {
+        const promoCode = code.trim().toLowerCase();
+
+        const promoCodes = {
+            ostad10: 0.10,
+            ostad50: 0.50,
+        };
+
+        if (this.items.length === 0) {
+            return {
+                success: false,
+                message: 'Add items to cart first!'
+            };
+        }
+
+        if (this.appliedPromo) {
+            return {
+                success: false,
+                message: 'A promo code has already been applied!'
+            };
+        }
+
+        if (promoCodes[promoCode]) {
+            this.appliedPromo = promoCode;
+            this.discount = promoCodes[promoCode];
+            this.save();
+
+            return {
+                success: true,
+                message: `Promo code applied! ${(this.discount * 100).toFixed(0)}% discount`
+            };
+        }
+
+        return {
+            success: false,
+            message: 'Invalid Promo Code'
+        };
+    },
+
+    removePromoCode() {
+        this.appliedPromo = null;
+        this.discount = 0;
+        this.save();
+    },
 
     // Get total count of items in cart
     getCount() {
@@ -184,8 +233,13 @@ const cart = {
 
     // Calculate total price
     getTotal() {
-        return this.items.reduce((total, item) => total + (item.price * item.quantity), 0);
+        const subtotal = this.items.reduce((total, item) => total + (item.price * item.quantity), 0);
+        return subtotal - (subtotal * this.discount);
+    },
 
+    // Get subtotal price
+    getSubtotal() {
+        return this.items.reduce((total, item) => total + (item.price * item.quantity), 0);
     },
 
     // Save cart state and update UI
@@ -277,7 +331,37 @@ const UI = {
         const cartCount = document.getElementById('cartCount');
         cartCount.textContent = cart.getCount();
         this.renderCartItems();
+        this.updatePromoUI();
 
+    },
+
+    updatePromoUI() {
+        const appliedPromoContainer = document.getElementById('appliedPromo');
+        const promoMessage = document.getElementById('promoMessage');
+        const promoCodeText = document.getElementById('promoCodeText');
+        const promoInput = document.getElementById('promoInput');
+        const inputContainer = promoInput.parentElement;
+
+        // Reset message if no error/success just happened (optional, but good for clean state)
+        // Actually, we might want to keep the message if it was just set. 
+        // But since this is called from save(), which is called from applyPromoCode(), 
+        // we should be careful not to clear the message immediately if we want to show "Applied!".
+        // However, applyPromoCode returns a result, and handleApplyPromo sets the message.
+        // So we shouldn't clear it here blindly.
+        
+        if (cart.appliedPromo) {
+            // Show applied state
+            inputContainer.classList.add('hidden');
+            appliedPromoContainer.classList.remove('hidden');
+            promoCodeText.textContent = cart.appliedPromo.toUpperCase();
+        } else {
+            // Show input state
+            inputContainer.classList.remove('hidden');
+            appliedPromoContainer.classList.add('hidden');
+            // Don't clear value here to allow retry if needed, or clear it? 
+            // If we just removed promo, we probably want to clear input.
+            if (!promoInput.value) promoInput.value = ''; 
+        }
     },
 
     // Render cart items in the sidebar
@@ -334,8 +418,18 @@ const UI = {
 
         }
 
-        // FIXED: Added dollar sign
-        cartTotal.textContent = `$${cart.getTotal().toFixed(2)}`;
+        // Update Total Display
+        const subtotal = cart.getSubtotal();
+        const total = cart.getTotal();
+        
+        if (cart.discount > 0) {
+            cartTotal.innerHTML = `
+                <span class="text-sm text-gray-400 line-through block text-right">$${subtotal.toFixed(2)}</span>
+                $${total.toFixed(2)}
+            `;
+        } else {
+            cartTotal.textContent = `$${total.toFixed(2)}`;
+        }
     },
 
     // Handle quantity change from input field
@@ -446,10 +540,40 @@ const UI = {
 
     },
 
+    // Handle Apply Promo
+    handleApplyPromo() {
+        const input = document.getElementById('promoInput');
+        const code = input.value;
+        if (!code) return;
+
+        const result = cart.applyPromoCode(code);
+        
+        const messageEl = document.getElementById('promoMessage');
+        messageEl.textContent = result.message;
+        messageEl.classList.remove('hidden');
+        
+        if (result.success) {
+            messageEl.className = 'mt-2 text-sm font-semibold text-green-500';
+            input.value = ''; // Clear input on success
+        } else {
+            messageEl.className = 'mt-2 text-sm font-semibold text-red-500';
+        }
+    },
+
+    // Handle Remove Promo
+    handleRemovePromo() {
+        cart.removePromoCode();
+        const messageEl = document.getElementById('promoMessage');
+        messageEl.classList.add('hidden');
+    },
+
     // Attach all event listeners
     attachEventListeners() {
         document.getElementById('cartBtn').addEventListener('click', () => this.toggleCart());
         document.getElementById('closeCart').addEventListener('click', () => this.toggleCart());
+        
+        document.getElementById('applyPromo').addEventListener('click', () => this.handleApplyPromo());
+        document.getElementById('removePromo').addEventListener('click', () => this.handleRemovePromo());
 
         // FIXED: Better overlay click handler
         document.getElementById('overlay').addEventListener('click', () => {
